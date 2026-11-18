@@ -1,0 +1,36 @@
+name: Refresh OTS live statistics
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/refresh.yml", "refresh.mjs", "parse-signal.mjs"]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+concurrency:
+  group: ots-live-stats
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node refresh.mjs
+      - name: Publish the verified figures and retrieval time
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/live.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh public MQL5 account statistics"
+            git push origin HEAD:main
+          fi
