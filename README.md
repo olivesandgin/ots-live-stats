@@ -11,4 +11,4 @@ The OTS homepage reads the four public account figures from [live.json](https://
 | `refreshedAt` | UTC time when the publisher successfully retrieved and validated all four figures |
 | `sourceUrl` | The public MQL5 signal used for that reading |
 
-GitHub Actions schedules a retrieval at minute 17 of each UTC hour. A successful retrieval updates the JSON even when the four figures are unchanged. If the source is unavailable or its report cannot be validated, the previous figures and timestamp stay in place. The [workflow history](https://github.com/olivesandgin/ots-live-stats/actions/workflows/refresh.yml) shows the outcome of each attempt and supports on-demand refreshes.
+GitHub Actions schedules a retrieval daily at 06:00 Europe/Malta, including daylight-saving changes. A successful retrieval updates the JSON even when the four figures are unchanged. If the source is unavailable or its report cannot be validated, the previous figures and timestamp stay in place. The [workflow history](https://github.com/olivesandgin/ots-live-stats/actions/workflows/refresh.yml) shows the outcome of each attempt and supports on-demand refreshes.
