@@ -6,6 +6,8 @@ on:
   schedule:
     - cron: "0 6 * * *"
       timezone: "Europe/Malta"
+    - cron: "17 6 * * *"
+      timezone: "Europe/Malta"
   workflow_dispatch:
 
 permissions: {}
@@ -25,7 +27,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: node refresh.mjs
+      - name: Refresh if due
+        env:
+          TZ: Europe/Malta
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "schedule" ]] && node --input-type=module <<'JS'
+          import { readFileSync } from "node:fs";
+
+          try {
+            const { refreshedAt } = JSON.parse(readFileSync("public/live.json", "utf8"));
+            const now = new Date();
+            const morning = new Date(now);
+            morning.setHours(6, 0, 0, 0);
+            const lastRefresh = Date.parse(refreshedAt);
+            process.exitCode = lastRefresh >= morning.getTime() && lastRefresh <= now.getTime() ? 0 : 1;
+          } catch {
+            process.exitCode = 1;
+          }
+          JS
+          then
+            echo "The feed already refreshed since 06:00 Malta time."
+          else
+            node refresh.mjs
+          fi
       - name: Publish the verified figures and retrieval time
         run: |
           git config user.name "github-actions[bot]"
